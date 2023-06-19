@@ -1,6 +1,8 @@
 package com.spanner.basics;
 
+import com.spanner.basics.command.BasicsCommand;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.minestom.server.MinecraftServer;
 import net.minestom.server.extensions.Extension;
 
 public class Basics extends Extension {
@@ -10,6 +12,8 @@ public class Basics extends Extension {
     MiniMessage mm = MiniMessage.miniMessage();
     @Override
     public void initialize() {
+        MinecraftServer.getCommandManager().register(new BasicsCommand(this));
+
         getLogger().info( mm.deserialize( "Initialized Basics <yellow>v%s".formatted(VERSION) ) );
     }
 
