@@ -1,0 +1,19 @@
+{
+  "entrypoint": "com.spanner.basics.Basics",
+  "name": "Basics",
+  "version": "${VERSION}",
+  "authors": [
+    "Spanner"
+  ],
+  "externalDependencies": {
+    "repositories": [
+      {
+        "name": "Central",
+        "url": "https://repo1.maven.org/maven2/"
+      }
+    ],
+    "artifacts": [
+      "net.kyori:adventure-text-minimessage:4.14.0"
+    ]
+  }
+}
