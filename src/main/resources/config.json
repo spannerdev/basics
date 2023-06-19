@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "modules": {
+    "permission": {
+      "enabled": true,
+      "config": {
+        "groups": [
+          {
+            "name": "admin",
+            "permissions": [
+              "*"
+            ],
+            "inherit": ["default"],
+            "permission_level": 4
+          },
+          {
+            "name": "default",
+            "permissions": [
+              "basics"
+            ],
+            "inherit": [],
+            "permission_level": 0
+          }
+        ],
+        "players": [
+          {
+            "uuid": "a1094058-89ab-496e-928c-cb660577e1bd",
+            "group": "admin"
+          }
+        ]
+      }
+    }
+  }
+}
