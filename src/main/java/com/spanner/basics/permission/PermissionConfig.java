@@ -1,13 +1,14 @@
 package com.spanner.basics.permission;
 
+import com.spanner.basics.config.Config;
+import com.spanner.basics.config.ConfigObject;
+import com.spanner.basics.config.ConfigQueryResult;
 import net.minestom.server.entity.Player;
 import net.minestom.server.permission.Permission;
 import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static com.spanner.basics.config.Config.$;
 
@@ -19,31 +20,32 @@ public class PermissionConfig {
         // TODO: Lots of validation
         Map<String, PermissionGroup> permissionGroups = new HashMap<>();
 
-        JSONArray configPermGroups = $("modules.permission.config.groups");
-        configPermGroups.forEach(group -> {
-            Map<String, Object> obj = (Map<String, Object>) group;
+        Config config = Config.getInstance();
 
+        ConfigObject[] configPermGroups = config.getObjectArray("modules.permission.config.groups");
+        int i = 0;
+        for (ConfigObject groupObj : configPermGroups) {
+            String name = groupObj.getAsString("name");
 
-            String name = (String) obj.get("name");
-            JSONArray permissions = (JSONArray) obj.get("permissions");
-            Set<Permission> permissionSet = new HashSet<>(permissions.stream().map(Object::toString).map(Permission::new).toList());
-            int permissionLevel = (int) obj.get("permission_level");
+            Set<Permission> permissionSet = config.getPermissionSet("modules.permission.config.groups["+i+"].permissions");
+            int permissionLevel = groupObj.getAsNumber("permission_level").intValue();
 
             permissionGroups.put(name, new PermissionGroup(name, permissionSet, permissionLevel));
-        });
+            i++;
+        }
         permissionGroups.values().forEach(group -> {
-            JSONArray inherits = (JSONArray) ((JSONArray) $("modules.permission.config.groups.[?(@.name == '"+group.getName()+"')].inherit")).get(0);
-            inherits.forEach(inheritGroup -> group.addInherits(permissionGroups.get(inheritGroup)));
+            String[] inherits = config.getStringArray(config.query("modules.permission.config.groups.[?(@.name == '"+group.getName()+"')].inherit").<JSONArray>first());
+            for (String groupName : inherits) {
+                group.addInherits(permissionGroups.get(groupName));
+            }
         });
         return permissionGroups;
     }
 
     public static void setPermissions(Player p) {
-        JSONArray results = $("modules.permission.config.players.[?(@.uuid =~ /^"+p.getUuid()+"$/i)].group");
-        if (results.size() != 1) return;
-        String groupName = (String) results.get(0);
-
-        if (groupName == null) return;
+        Object result = Config.getInstance().query("modules.permission.config.players.[?(@.uuid =~ /^"+p.getUuid()+"$/i)].group").first();
+        if (result == null) return;
+        String groupName = (String) result;
         PermissionGroup group = permissionGroups.get(groupName);
 
         if (group == null) return;

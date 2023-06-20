@@ -6,10 +6,17 @@ import com.jayway.jsonpath.PathNotFoundException;
 import com.spanner.basics.Basics;
 import com.spanner.basics.module.BasicsModule;
 import com.spanner.basics.permission.PermissionModule;
+import net.minestom.server.permission.Permission;
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Config {
 
@@ -43,6 +50,57 @@ public class Config {
         } catch (PathNotFoundException e) {
             return null;
         }
+    }
+
+    public ConfigQueryResult query(String path) {
+        var result = getArray(path);
+        if (result == null) return null;
+        return new ConfigQueryResult(result);
+    }
+
+    public Object getFirst(String path) {
+        var result = get(path);
+        if (!(result instanceof JSONArray jarray) || jarray.size() < 1) return null;
+        return jarray.get(0);
+    }
+
+    public ConfigObject[] getObjectArray(String path) {
+        JSONArray jarray = getArray(path);
+        if (jarray == null) return null;
+
+        return jarray.stream()
+                .map(LinkedHashMap.class::cast)
+                .map(ConfigObject::fromLinkedHashMap)
+                .toArray(ConfigObject[]::new);
+    }
+
+    public String[] getStringArray(JSONArray jarray) {
+        return jarray.stream().map(Object::toString).toArray(String[]::new); // TODO: Check that all values are actually strings
+    }
+    public String[] getStringArray(String path) {
+        JSONArray jarray = getArray(path);
+        if (jarray == null) return null;
+
+        return getStringArray(jarray);
+    }
+
+    private JSONArray getArray(String path) {
+        var value = get(path);
+        if (!(value instanceof JSONArray jarray)) return null;
+        return jarray;
+    }
+
+    public Permission getPermission(String path) {
+        var value = get(path);
+        if (!(value instanceof String permissionName) || permissionName.isBlank()) return null;
+
+        return new Permission(permissionName); // TODO: Should these objects be shared/cached? Feels wrong to instantiate a new one every time
+    }
+
+    public Set<Permission> getPermissionSet(String path) {
+        String[] sarray = getStringArray(path);
+        if (sarray == null) return null;
+        return Arrays.stream(sarray).map(Permission::new).collect(Collectors.toSet());
     }
 
     public static Config getInstance() {
