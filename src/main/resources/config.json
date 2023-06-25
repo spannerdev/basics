@@ -1,5 +1,19 @@
 {
-  "version": 1,
+  "version": 2,
+  "commands": {
+    "gamemode": {
+      "enabled": true
+    },
+    "give": {
+      "enabled": true
+    },
+    "teleport": {
+      "enabled": true
+    },
+    "summon": {
+      "enabled": true
+    }
+  },
   "modules": {
     "permission": {
       "enabled": true,

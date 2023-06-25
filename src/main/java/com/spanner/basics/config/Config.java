@@ -4,11 +4,14 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import com.spanner.basics.Basics;
+import com.spanner.basics.command.*;
 import com.spanner.basics.module.BasicsModule;
 import com.spanner.basics.permission.PermissionModule;
+import net.minestom.server.MinecraftServer;
+import net.minestom.server.command.CommandManager;
+import net.minestom.server.command.builder.Command;
 import net.minestom.server.permission.Permission;
 import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,8 +23,8 @@ import java.util.stream.Collectors;
 
 public class Config {
 
-    private final static int MIN_COMPATIBLE_VERSION = 1;
-    private final static int CURRENT_VERSION = 1;
+    private final static int MIN_COMPATIBLE_VERSION = 2; // TODO: Actually try and make it more compatible...
+    private final static int CURRENT_VERSION = 2;
 
     private static Config INSTANCE = null;
 
@@ -38,6 +41,21 @@ public class Config {
         if ($("modules.permission.enabled")) loadedModules.add( new PermissionModule().initialize() );
 
         return loadedModules.toArray(BasicsModule[]::new);
+    }
+
+    public Command[] loadCommands() {
+        ArrayList<Command> loadedCommands = new ArrayList<>();
+
+        if ($("commands.summon.enabled")) loadedCommands.add(new SummonCommand());
+        if ($("commands.teleport.enabled")) loadedCommands.add(new TeleportCommand());
+        if ($("commands.give.enabled")) loadedCommands.add(new GiveCommand());
+        if ($("commands.gamemode.enabled")) { loadedCommands.add(new GamemodeCommand()); loadedCommands.add(new ShortGamemodeCommand()); }
+
+
+        CommandManager commandManager = MinecraftServer.getCommandManager();
+        loadedCommands.forEach(commandManager::register);
+
+        return loadedCommands.toArray(Command[]::new);
     }
 
     public static <T> T $(String path) { // Truly evil method name, but equally beautiful.

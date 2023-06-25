@@ -15,12 +15,10 @@ public class BasicsCommand extends Command {
             sender.hasPermission("basics")
     );
 
-    Basics main;
-    MiniMessage mm = MiniMessage.miniMessage();
-    public BasicsCommand(Basics main) {
+    Basics main = Basics.getInstance();
+    MiniMessage mm = main.mm();
+    public BasicsCommand() {
         super("basics", "b");
-
-        this.main = main;
 
         setCondition(condition);
         setDefaultExecutor((sender, context) -> {
